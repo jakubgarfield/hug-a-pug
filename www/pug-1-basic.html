@@ -1,0 +1,105 @@
+<html>
+<head>    
+   <meta name="format-detection" content="telephone=no" />
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+        <script type="text/javascript" src="js/jquery-2.0.3.min.js"></script>
+    <style type="text/css">
+
+/* Reset */
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{border:0;font-size:100%;font:inherit;vertical-align:baseline;margin:0;padding:0}article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:none}table{border-collapse:collapse;border-spacing:0}
+
+body { background: black;}
+#neck, #back, #tail { position: absolute; width: 24%; height: 18%; opacity: 0.4;}
+#neck { background-color: red; top: 20%; left: 40%;}
+#back { background-color: yellow; top: 5%; left: 76%;}
+#tail { background-color: blue; top: 70%; left: 76%;}
+        
+#progress { height: 5%;}
+
+#progress > div { width: 0; height: 100%; margin: auto 0; background: #b4e391; /* Old browsers */ background: -moz-linear-gradient(top, #b4e391 0%, #61c419 50%, #b4e391 100%); /* FF3.6+ */ background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#b4e391), color-stop(50%,#61c419), color-stop(100%,#b4e391)); /* Chrome,Safari4+ */ background: -webkit-linear-gradient(top, #b4e391 0%,#61c419 50%,#b4e391 100%); /* Chrome10+,Safari5.1+ */ background: -o-linear-gradient(top, #b4e391 0%,#61c419 50%,#b4e391 100%); /* Opera 11.10+ */ background: -ms-linear-gradient(top, #b4e391 0%,#61c419 50%,#b4e391 100%); /* IE10+ */ background: linear-gradient(to bottom, #b4e391 0%,#61c419 50%,#b4e391 100%); /* W3C */}
+
+.active {}        
+                
+#canvas { width: 100%; background-image: url('img/pug-1.jpg'); background-size: cover; background-repeat: no-repeat; position: relative;}
+#controls { height: 5%; color: white;}
+
+.clearfix:after { content: ".";	display: block;	clear: both; visibility: hidden; line-height: 0; height: 0; } 
+.clearfix {	display: inline-block;}
+html[xmlns] .clearfix {	display: block;}
+* html .clearfix { height: 1%;}
+    </style>
+</head>
+<body>
+    <div id="progress">
+        <div></div>
+    </div>
+ 
+    <div id="canvas">       
+        <div class="clearfix">
+            <div id="neck" class="active"></div>
+            <div id="back"></div>
+            <div id="tail"></div>
+        </div>
+    </div>
+
+    <div id="controls">        
+    </div>
+    
+    <script type="text/javascript">
+    var score = 0;
+    var maxScore = 100;
+
+    function bind() {
+        $(window).trigger('mouseup');
+        $("#neck").unbind('touchstart mousedown');    
+        $("#back").unbind('touchstart mousedown');
+        $("#tail").unbind('touchstart mousedown');
+
+        var shouldWait = false;
+        $(".active").bind('touchstart mousedown', function() {
+            event.preventDefault();
+            $(window).bind('touchmove mousemove', function() {
+                if (shouldWait || score >= maxScore) {                    
+                    return;
+                }
+
+                score++;
+                $("#progress > div").css("width", score + "%"); 
+                checkLevel(score);
+                
+                shouldWait = true;
+                setTimeout(function(){ shouldWait = false; }, 100);
+            });
+        });
+
+        $(window).bind('touchend mouseup', function() {
+                $(window).unbind('touchmove mousemove')
+        });
+    }
+
+    function checkLevel(score) {
+        if (score == 33) {
+            $("#neck").removeClass("active");
+            $("#back").addClass("active");
+            bind();
+        } else if (score == 66) {
+            $("#back").removeClass("active");
+            $("#tail").addClass("active");
+            bind();
+        } else if (score >= maxScore) {            
+            $("#tail").removeClass("active");
+            bind();
+            alert('... chro chro chrocht!');
+        }
+             
+    }
+
+    $(document).ready(function() {
+        var width = $("#canvas").width();
+        $("#canvas").css("height", width / 3 * 4);
+              
+        bind();    
+    });
+    </script>
+</body>
+</html>
