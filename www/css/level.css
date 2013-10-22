@@ -1,0 +1,64 @@
+﻿#level #neck, #level #back, #level #tail
+{
+    position: absolute;
+    width: 40%;
+    height: 30%;
+    opacity: 0.4;
+}
+
+#level #progress > div
+{
+    width: 0;
+    height: 100%;
+    margin: auto 0;
+    background: #b4e391; /* Old browsers */
+    background: -moz-linear-gradient(top, #b4e391 0%, #61c419 50%, #b4e391 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#b4e391), color-stop(50%,#61c419), color-stop(100%,#b4e391)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, #b4e391 0%,#61c419 50%,#b4e391 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, #b4e391 0%,#61c419 50%,#b4e391 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, #b4e391 0%,#61c419 50%,#b4e391 100%); /* IE10+ */
+    background: linear-gradient(to bottom, #b4e391 0%,#61c419 50%,#b4e391 100%); /* W3C */
+}
+
+#level #canvas
+{
+    width: 100%;    
+    background-size: cover;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+#level #adds
+{
+    margin: auto;
+    text-align: center;
+}
+
+/* Level 1 specifics */
+.level-1 #neck
+{
+    top: 20%;
+    left: 35%;
+}
+
+.level-1 #back
+{
+    top: 0%;
+    left: 60%;
+}
+
+.level-1 #tail
+{
+    top: 70%;
+    left: 45%;
+}
+
+.level-1 #canvas
+{
+    background-image: url('../img/pug-1.jpg');
+}
+
+.level-2 #canvas
+{
+    background-image: url('../img/pug-2.jpg');
+}

@@ -1,26 +1,154 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8" />
-        <meta name="format-detection" content="telephone=no" />
-        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
-        <link rel="stylesheet" type="text/css" href="css/index.css" />
-        <title>Hug a Pug!</title>
-    </head>
-    <body>
-        <div class="app">
-            <h1>Hug a Pug!</h1>
-            <div id="deviceready" class="blink">              
-                <ul>
-                    <li><a href="pug-1.html">Start hugging!</a></li>
-                    <li><a href="#">About</a></li>
-                </ul>                        
+<head>
+    <meta charset="utf-8" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+    <link rel="stylesheet" type="text/css" href="css/reset.css" />
+    <link rel="stylesheet" type="text/css" href="css/default.css" />
+    <link rel="stylesheet" type="text/css" href="css/menu.css" />
+    <link rel="stylesheet" type="text/css" href="css/level.css" />
+    <title>Hug a Pug!</title>
+</head>
+<body>
+    <div class="menu" data-bind="visible: showMenu">
+        <h1>Hug a Pug!</h1>
+        <div id="deviceready" class="blink">
+            <ul>
+                <li><a data-bind="click: $root.loadNextLevel">Start hugging!!!</a></li>
+                <li><a>About</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="level" data-bind="visible: showLevel, attr: { 'class': 'level-' + currentLevel()}">
+        <div id="progress">
+            <div></div>
+        </div>
+
+        <div id="canvas">
+            <div class="clearfix">
+                <div id="neck" class="active"></div>
+                <div id="back"></div>
+                <div id="tail"></div>
             </div>
         </div>
-        <script type="text/javascript" src="phonegap.js"></script>
-        <script type="text/javascript" src="js/index.js"></script>
-        <script type="text/javascript">
-            app.initialize();
-        </script>
-    </body>
+
+        <div id="adds">
+            <script type="text/javascript" src="http://ad.leadboltads.net/show_app_ad.js?section_id=396571682"></script>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="phonegap.js"></script>
+    <script type="text/javascript" src="js/knockout-2.3.0.js"></script>
+    <script type="text/javascript" src="js/jquery-2.0.3.min.js"></script>
+    <script type="text/javascript" src="js/index.js"></script>
+    <script type="text/javascript">
+
+        function GameViewModel() {
+            // Data
+            var self = this;
+            self.showMenu = ko.observable();
+            self.showLevel = ko.observable();
+            self.currentLevel = ko.observable();
+
+
+            // Behaviours
+            self.loadNextLevel = function () {
+                self.showMenu(false);
+                self.showLevel(true);
+                self.currentLevel(self.currentLevel() + 1);
+                resizeCanvas();
+                start();
+            };
+
+
+            // Initialization
+            self.showLevel(false);
+            self.showMenu(true);
+            self.currentLevel(0);
+
+            // Functions
+            function resizeCanvas() {
+                var width = $("#canvas").width();
+                $("#canvas").css("height", width / 3 * 4);
+
+                var body = document.body;
+                var html = document.documentElement;
+                var height = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
+                $("#progress").css("height", height * 0.05);
+            };
+
+            function getPhoneGapPath() {
+                var path = window.location.pathname;
+                path = path.substr(path, path.length - 10);
+                return 'file://' + path;
+            };
+
+            function start() {
+                var $neck = $("#neck");
+                var $back = $("#back");
+                var $tail = $("#tail");
+                var $canvas = $("#canvas");
+                var $progress = $("#progress > div");
+                var $active = $neck;
+
+                var bark = new Media(getPhoneGapPath() + "mp3/pug_bark.mp3");
+                var score = 0;
+                var maxScore = 100;
+                var shouldWait = false;
+
+                $canvas.bind('touchmove', function (e) {
+                    e.preventDefault();
+
+                    if (shouldWait) {
+                        return;
+                    }
+
+                    var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
+                    var elm = $active.offset();
+                    var x = touch.pageX - elm.left;
+                    var y = touch.pageY - elm.top;
+                    if (x < $active.width() && x > 0) {
+                        if (y < $active.height() && y > 0) {
+
+                            score++;
+                            $progress.css("width", score + "%");
+                            checkLevel(score);
+
+                            shouldWait = true;
+                            setTimeout(function () { shouldWait = false; }, 100);
+                        }
+                    }
+                });
+
+                function checkLevel(score) {
+                    if (score == 1) {
+                        navigator.notification.vibrate(500);
+                        bark.play();
+                    } else if (score == 33) {
+                        navigator.notification.vibrate(500);
+                        bark.play();
+                        $active = $back;
+                    } else if (score == 66) {
+                        navigator.notification.vibrate(500);
+                        bark.play();
+                        $active = $tail;
+                    } else if (score >= maxScore) {
+                        navigator.notification.vibrate(1500);
+                        bark.play();
+                        alert('... chro chro chrocht!');
+                        score = 0;
+                        self.loadNextLevel();
+                    }
+                }
+            };
+        };
+
+
+        app.initialize();
+        ko.applyBindings(new GameViewModel());
+    </script>
+</body>
+
 </html>

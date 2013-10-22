@@ -116,65 +116,7 @@
     </div>
 
     <script type="text/javascript">
-        document.addEventListener("deviceready", function () {
-            'use strict';
-
-            var $neck = $("#neck");
-            var $back = $("#back");
-            var $tail = $("#tail");
-            var $canvas = $("#canvas");
-            var $progress = $("#progress > div");
-            var $active = $neck;
-
-            var bark = new Media(getPhoneGapPath() + "mp3/pug_bark.mp3");
-            var score = 0;
-            var maxScore = 100;
-            var shouldWait = false;
-
-            $canvas.bind('touchmove', function (e) {
-                e.preventDefault();
-
-                if (shouldWait) {
-                    return;
-                }
-
-                var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
-                var elm = $active.offset();
-                var x = touch.pageX - elm.left;
-                var y = touch.pageY - elm.top;
-                if (x < $active.width() && x > 0) {
-                    if (y < $active.height() && y > 0) {
-
-                        score++;
-                        $progress.css("width", score + "%");
-                        checkLevel(score);
-
-                        shouldWait = true;
-                        setTimeout(function () { shouldWait = false; }, 100);
-                    }
-                }
-            });
-
-            function checkLevel(score) {
-                if (score == 1) {
-                    navigator.notification.vibrate(500);
-                    bark.play();
-                } else if (score == 33) {
-                    navigator.notification.vibrate(500);
-                    bark.play();
-                    $active = $back;
-                } else if (score == 66) {
-                    navigator.notification.vibrate(500);
-                    bark.play();
-                    $active = $tail;
-                } else if (score >= maxScore) {
-                    navigator.notification.vibrate(1500);
-                    bark.play();
-                    alert('... chro chro chrocht!');
-                }
-
-            }
-        }, false);
+        document.addEventListener("deviceready", 
 
         function getPhoneGapPath() {
             var path = window.location.pathname;
