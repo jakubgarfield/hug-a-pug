@@ -55,10 +55,35 @@
 
 .level-1 #canvas
 {
-    background-image: url('../img/pug-1.jpg');
+    background-image: url('../img/pug-1.png');
 }
 
 .level-2 #canvas
 {
-    background-image: url('../img/pug-2.jpg');
+    background-image: url('../img/pug-2.png');
+}
+
+.level-3 #canvas
+{
+    background-image: url('../img/pug-3.png');
+}
+
+.level-4 #canvas
+{
+    background-image: url('../img/pug-4.png');
+}
+
+.level-5 #canvas
+{
+    background-image: url('../img/pug-5.png');
+}
+
+.level-6 #canvas
+{
+    background-image: url('../img/pug-6.png');
+}
+
+.level-7 #canvas
+{
+    background-image: url('../img/pug-7.png');
 }
