@@ -1,5 +1,5 @@
 /* Portrait layout (default) */
-.menu
+#menu
 {
     background: url(../img/logo.png) no-repeat center top; /* 170px x 200px */
     text-align: center;
@@ -7,7 +7,7 @@
     padding-top: 125px;
 }
 
-.menu h1
+#menu h1
 {
     font-size: 24px;
     font-weight: normal;
@@ -18,12 +18,12 @@
     margin-bottom: 150px;
 }
 
-.menu ul li
+#menu ul li
 {
     list-style: none;
 }
 
-.menu ul li a
+#menu ul li a
 {
     display: block;
     border-radius: 15px;
@@ -74,7 +74,7 @@
     }
 }
 
-.menu .blink
+#menu .blink
 {
     animation: fade 3000ms infinite;
     -webkit-animation: fade 3000ms infinite;
