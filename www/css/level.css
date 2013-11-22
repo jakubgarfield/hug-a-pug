@@ -4,6 +4,7 @@
     width: 40%;
     height: 30%;
     opacity: 0.4;
+    background-color: red;
 }
 
 #level #progress > div

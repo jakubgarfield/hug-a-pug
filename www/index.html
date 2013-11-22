@@ -9,73 +9,50 @@
     <link rel="stylesheet" type="text/css" href="css/menu.css" />
     <link rel="stylesheet" type="text/css" href="css/level.css" />
     <title>Hug a Pug!</title>
-</head>
-<body>
-    <div id="menu" data-bind="visible: showMenu">
-        <h1>Hug a Pug!</h1>
-        <div id="deviceready" class="blink">
-            <ul>
-                <li><a data-bind="click: $root.loadNextLevel">Start hugging!!!</a></li>
-                <li><a>About</a></li>
-            </ul>
-        </div>
-    </div>
-
-    <div id="level" data-bind="visible: showLevel, attr: { 'class': 'level-' + currentLevel()}">
-        <div id="progress">
-            <div></div>
-        </div>
-
-        <div id="canvas">
-            <div class="clearfix">
-                <div id="neck"></div>
-                <div id="back"></div>
-                <div id="tail"></div>
-            </div>
-        </div>
-
-        <div id="adds">
-            <script type="text/javascript" src="http://ad.leadboltads.net/show_app_ad.js?section_id=396571682"></script>
-        </div>
-    </div>
-
     <script type="text/javascript" src="phonegap.js"></script>
     <script type="text/javascript" src="js/knockout-2.3.0.js"></script>
     <script type="text/javascript" src="js/jquery-2.0.3.min.js"></script>
-    <script type="text/javascript" src="js/index.js"></script>
     <script type="text/javascript">
         document.addEventListener("deviceready", function () {
+
             function GameViewModel() {
+
                 // Data
                 var self = this;
-                self.showMenu = ko.observable();
-                self.showLevel = ko.observable();
                 self.currentLevel = ko.observable();
-                self.levels = shuffle([1, 2, 3, 4, 5, 6, 7]);
+                self.levels = shuffle([1/*, 2, 3, 4, 5, 6, 7*/]);
 
 
                 // Behaviours
                 self.loadNextLevel = function () {
-                    self.showMenu(false);
-                    self.showLevel(true);
                     self.currentLevel(self.levels.pop());
                     start();
                 };
 
+                self.handleUserMove = function (data, event) {
+                    if (shouldWait) {
+                        return;
+                    }
 
-                // Initialization
-                self.showLevel(false);
-                self.showMenu(true);
-                self.currentLevel(0);
+                    var touch = event.touches[0] || event.changedTouches[0];
+                    var elm = $active.offset();
+                    var x = touch.pageX - elm.left;
+                    var y = touch.pageY - elm.top;
+                    if (x < $active.width() && x > 0) {
+                        if (y < $active.height() && y > 0) {
+                            score++;
+                            $("#progress > div").css("width", score + "%");
+                            checkLevel(score);
+
+                            shouldWait = true;
+                            setTimeout(function () { shouldWait = false; }, 100);
+                        }
+                    }
+                };
 
 
                 // Functions
-                var $neck = $("#neck");
-                var $back = $("#back");
-                var $tail = $("#tail");
-                var $canvas = $("#canvas");
-                var $progress = $("#progress > div");
-
+                var $active = null;
                 var bark = new Media(getPhoneGapPath() + "mp3/pug_bark.mp3");
                 var score = 0;
                 var maxScore = 100;
@@ -108,54 +85,113 @@
                     } else if (score == 33) {
                         navigator.notification.vibrate(250);
                         bark.play();
-                        $active = $back;
+                        $active = $("#back");
                     } else if (score == 66) {
                         navigator.notification.vibrate(250);
                         bark.play();
-                        $active = $tail;
+                        $active = $("#tail");
                     } else if (score >= maxScore) {
                         navigator.notification.vibrate(500);
                         bark.play();
-                        alert('... chro chro chrocht!');
                         self.loadNextLevel();
                     }
                 };
 
                 function start() {
                     resizeCanvas();
-                    $active = $neck;
+                    $active = $("#neck");
                     score = 0;
-                    $progress.css("width", score + "%");
+                    $("#progress > div").css("width", score + "%");
+                };               
+            }
+
+            function MasterViewModel() {
+
+                // Data
+                var self = this;
+                self.menu = ko.observable();
+                self.about = ko.observable();
+                self.game = ko.observable();
+
+                // Behaviors
+                self.startGame = function () {
+                    self.about(null);
+                    self.menu(null);
+                    var game = new GameViewModel();
+                    self.game(game);
+                    game.loadNextLevel();
                 };
 
-                $canvas.bind('touchmove', function (e) {
-                    e.preventDefault();
+                self.showAbout = function () {
+                    self.about(true);
+                    self.menu(null);
+                    self.game(null);
+                };
 
-                    if (shouldWait) {
-                        return;
+                // Initialization
+                showMenu();
+
+                // Function
+                function showMenu() {
+                    self.menu(true);
+                    self.about(null);
+                    self.game(null);
+                }
+
+                document.addEventListener("backbutton", function () {
+                    if (self.menu()) {
+                        navigator.app.exitApp();
                     }
-
-                    var touch = e.originalEvent.touches[0] || e.originalEvent.changedTouches[0];
-                    var elm = $active.offset();
-                    var x = touch.pageX - elm.left;
-                    var y = touch.pageY - elm.top;
-                    if (x < $active.width() && x > 0) {
-                        if (y < $active.height() && y > 0) {
-
-                            score++;
-                            $progress.css("width", score + "%");
-                            checkLevel(score);
-
-                            shouldWait = true;
-                            setTimeout(function () { shouldWait = false; }, 100);
-                        }
+                    else {
+                        showMenu();
                     }
-                });
-            };
+                }, false);
+            }
 
-            ko.applyBindings(new GameViewModel());            
+            ko.applyBindings(new MasterViewModel());
         });
     </script>
+</head>
+<body>
+    <div data-bind="if: menu">
+        <div id="menu">
+            <h1>Hug a Pug!</h1>
+            <div id="deviceready" class="blink">
+                <ul>
+                    <li><a data-bind="click: $root.startGame">Start hugging!!!</a></li>
+                    <li><a data-bind="click: $root.showAbout">About</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+
+    <div data-bind="with: game">
+        <div id="level" data-bind="attr: { 'class': 'level-' + currentLevel()}">
+            <div id="progress">
+                <div></div>
+            </div>
+
+            <div id="canvas" data-bind="event: { touchmove: handleUserMove }">
+                <div class="clearfix">
+                    <div id="neck"></div>
+                    <div id="back"></div>
+                    <div id="tail"></div>
+                </div>
+            </div>
+
+            <div id="adds">
+                <script type="text/javascript" src="http://ad.leadboltads.net/show_app_ad.js?section_id=396571682"></script>
+            </div>
+        </div>
+    </div>
+
+
+    <div data-bind="if: about">
+        <div id="about">
+            <h2>H2 ABOUT</h2>
+        </div>
+    </div>
 </body>
 
 </html>
