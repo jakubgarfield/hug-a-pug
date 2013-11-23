@@ -17,16 +17,48 @@
 
             function GameViewModel() {
 
+                // Variables
+                var availableLevels = [1, 2, 3, 4, 5, 6, 7];
+                var maxLevels = 1;
+                var modes = { Time: 0, Free: 1 };
+                var bark = new Media(getPhoneGapPath() + "mp3/pug_bark.mp3");
+
+                var $active = null;
+                var score = 0;
+                var maxScore = 100;
+                var shouldWait = false;
+                var levelsStarted = 0;
+
                 // Data
                 var self = this;
                 self.currentLevel = ko.observable();
-                self.levels = shuffle([1/*, 2, 3, 4, 5, 6, 7*/]);
+                self.isFinished = ko.observable(false);
+                self.levels = [];
+                self.mode = modes.Free;
+                self.ellapsedTime = new Date().getTime();
 
 
                 // Behaviours
                 self.loadNextLevel = function () {
+                    levelsStarted++;
+
+                    if (self.levels.length == 0) {
+                        self.levels = shuffle(availableLevels.slice(0));
+                    }
+
+                    if (self.mode == modes.Time) {
+                        if (levelsStarted == maxLevels + 1) {
+                            self.ellapsedTime = new Date().getTime() - self.ellapsedTime;
+                            self.isFinished(true);
+                            return;
+                        }
+                    }
+
                     self.currentLevel(self.levels.pop());
-                    start();
+                    score = 0;
+                    resizeCanvas();
+                    $active = $("#neck");
+                    $("#progress > div").css("width", score + "%");
                 };
 
                 self.handleUserMove = function (data, event) {
@@ -52,12 +84,6 @@
 
 
                 // Functions
-                var $active = null;
-                var bark = new Media(getPhoneGapPath() + "mp3/pug_bark.mp3");
-                var score = 0;
-                var maxScore = 100;
-                var shouldWait = false;
-
                 function shuffle(o) {
                     for (var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
                     return o;
@@ -96,13 +122,16 @@
                         self.loadNextLevel();
                     }
                 };
+            }
 
-                function start() {
-                    resizeCanvas();
-                    $active = $("#neck");
-                    score = 0;
-                    $("#progress > div").css("width", score + "%");
-                };               
+            function ScoreViewModel() {
+
+                // Data
+                var self = this;
+                self.lastEllapsedTime = ko.observable();
+
+                // Initialization
+                self.lastEllapsedTime(null);
             }
 
             function MasterViewModel() {
@@ -112,20 +141,41 @@
                 self.menu = ko.observable();
                 self.about = ko.observable();
                 self.game = ko.observable();
+                self.score = ko.observable();
 
                 // Behaviors
-                self.startGame = function () {
+                self.startGame = function (mode) {
                     self.about(null);
                     self.menu(null);
+                    self.score(null);
+
                     var game = new GameViewModel();
+                    game.mode = mode;
+                    game.isFinished.subscribe(function (value) {
+                        self.showScore(game.ellapsedTime);
+                    })
+
                     self.game(game);
                     game.loadNextLevel();
                 };
 
-                self.showAbout = function () {
-                    self.about(true);
+                self.showScore = function (ellapsedTime) {
+                    self.about(null);
                     self.menu(null);
                     self.game(null);
+
+                    var score = new ScoreViewModel();
+                    if (ellapsedTime) {
+                        score.lastEllapsedTime(ellapsedTime);
+                    }
+                    self.score(score);
+                };
+
+                self.showAbout = function () {
+                    self.menu(null);
+                    self.game(null);
+                    self.score(null);
+                    self.about(true);
                 };
 
                 // Initialization
@@ -133,9 +183,10 @@
 
                 // Function
                 function showMenu() {
-                    self.menu(true);
                     self.about(null);
                     self.game(null);
+                    self.score(null);
+                    self.menu(true);
                 }
 
                 document.addEventListener("backbutton", function () {
@@ -158,7 +209,9 @@
             <h1>Hug a Pug!</h1>
             <div id="deviceready" class="blink">
                 <ul>
-                    <li><a data-bind="click: $root.startGame">Start hugging!!!</a></li>
+                    <li><a data-bind="click: function () { $root.startGame(0) }">Time Hugging</a></li>
+                    <li><a data-bind="click: function () { $root.startGame(1) }">Endless Hugging</a></li>
+                    <li><a data-bind="click: function () { $root.showScore() }">Best Pug Huggers</a></li>
                     <li><a data-bind="click: $root.showAbout">About</a></li>
                 </ul>
             </div>
@@ -186,10 +239,19 @@
         </div>
     </div>
 
+    <div data-bind="with: score">
+        <div id="score">
+            <div data-bind="if: lastEllapsedTime">
+                <h1>SCORE</h1>
+                <h2 data-bind="text: lastEllapsedTime"></h2>
+            </div>
+            <h2>TOP HUGGERS</h2>
+        </div>
+    </div>
 
     <div data-bind="if: about">
         <div id="about">
-            <h2>H2 ABOUT</h2>
+            <h1>ABOUT</h1>
         </div>
     </div>
 </body>
