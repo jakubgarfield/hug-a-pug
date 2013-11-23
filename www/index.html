@@ -9,251 +9,259 @@
     <link rel="stylesheet" type="text/css" href="css/menu.css" />
     <link rel="stylesheet" type="text/css" href="css/level.css" />
     <title>Hug a Pug!</title>
-    <script type="text/javascript" src="phonegap.js"></script>
-    <script type="text/javascript" src="js/knockout-2.3.0.js"></script>
-    <script type="text/javascript" src="js/jquery-2.0.3.min.js"></script>
-    <script type="text/javascript">
-        document.addEventListener("deviceready", function () {
-
-            function GameViewModel() {
-
-                // Variables
-                var availableLevels = [1, 2, 3, 4, 5, 6, 7];
-                var maxLevels = 1;
-                var modes = { Time: 0, Free: 1 };
-                var bark = new Media(getPhoneGapPath() + "mp3/pug_bark.mp3");
-
-                var $active = null;
-                var score = 0;
-                var maxScore = 100;
-                var shouldWait = false;
-                var levelsStarted = 0;
-
-                // Data
-                var self = this;
-                self.currentLevel = ko.observable();
-                self.isFinished = ko.observable(false);
-                self.levels = [];
-                self.mode = modes.Free;
-                self.ellapsedTime = new Date().getTime();
-
-
-                // Behaviours
-                self.loadNextLevel = function () {
-                    levelsStarted++;
-
-                    if (self.levels.length == 0) {
-                        self.levels = shuffle(availableLevels.slice(0));
-                    }
-
-                    if (self.mode == modes.Time) {
-                        if (levelsStarted == maxLevels + 1) {
-                            self.ellapsedTime = new Date().getTime() - self.ellapsedTime;
-                            self.isFinished(true);
-                            return;
-                        }
-                    }
-
-                    self.currentLevel(self.levels.pop());
-                    score = 0;
-                    resizeCanvas();
-                    $active = $("#neck");
-                    $("#progress > div").css("width", score + "%");
-                };
-
-                self.handleUserMove = function (data, event) {
-                    if (shouldWait) {
-                        return;
-                    }
-
-                    var touch = event.touches[0] || event.changedTouches[0];
-                    var elm = $active.offset();
-                    var x = touch.pageX - elm.left;
-                    var y = touch.pageY - elm.top;
-                    if (x < $active.width() && x > 0) {
-                        if (y < $active.height() && y > 0) {
-                            score++;
-                            $("#progress > div").css("width", score + "%");
-                            checkLevel(score);
-
-                            shouldWait = true;
-                            setTimeout(function () { shouldWait = false; }, 100);
-                        }
-                    }
-                };
-
-
-                // Functions
-                function shuffle(o) {
-                    for (var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
-                    return o;
-                };
-
-                function resizeCanvas() {
-                    var width = $("#canvas").width();
-                    $("#canvas").css("height", width / 3 * 4);
-
-                    var body = document.body;
-                    var html = document.documentElement;
-                    var height = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
-                    $("#progress").css("height", height * 0.05);
-                };
-
-                function getPhoneGapPath() {
-                    var path = window.location.pathname;
-                    path = path.substr(path, path.length - 10);
-                    return 'file://' + path;
-                };
-
-                function checkLevel(score) {
-                    if (score == 1) {
-                        navigator.notification.vibrate(250);
-                    } else if (score == 33) {
-                        navigator.notification.vibrate(250);
-                        bark.play();
-                        $active = $("#back");
-                    } else if (score == 66) {
-                        navigator.notification.vibrate(250);
-                        bark.play();
-                        $active = $("#tail");
-                    } else if (score >= maxScore) {
-                        navigator.notification.vibrate(500);
-                        bark.play();
-                        self.loadNextLevel();
-                    }
-                };
-            }
-
-            function ScoreViewModel() {
-
-                // Data
-                var self = this;
-                self.lastEllapsedTime = ko.observable();
-
-                // Initialization
-                self.lastEllapsedTime(null);
-            }
-
-            function MasterViewModel() {
-
-                // Data
-                var self = this;
-                self.menu = ko.observable();
-                self.about = ko.observable();
-                self.game = ko.observable();
-                self.score = ko.observable();
-
-                // Behaviors
-                self.startGame = function (mode) {
-                    self.about(null);
-                    self.menu(null);
-                    self.score(null);
-
-                    var game = new GameViewModel();
-                    game.mode = mode;
-                    game.isFinished.subscribe(function (value) {
-                        self.showScore(game.ellapsedTime);
-                    })
-
-                    self.game(game);
-                    game.loadNextLevel();
-                };
-
-                self.showScore = function (ellapsedTime) {
-                    self.about(null);
-                    self.menu(null);
-                    self.game(null);
-
-                    var score = new ScoreViewModel();
-                    if (ellapsedTime) {
-                        score.lastEllapsedTime(ellapsedTime);
-                    }
-                    self.score(score);
-                };
-
-                self.showAbout = function () {
-                    self.menu(null);
-                    self.game(null);
-                    self.score(null);
-                    self.about(true);
-                };
-
-                // Initialization
-                showMenu();
-
-                // Function
-                function showMenu() {
-                    self.about(null);
-                    self.game(null);
-                    self.score(null);
-                    self.menu(true);
-                }
-
-                document.addEventListener("backbutton", function () {
-                    if (self.menu()) {
-                        navigator.app.exitApp();
-                    }
-                    else {
-                        showMenu();
-                    }
-                }, false);
-            }
-
-            ko.applyBindings(new MasterViewModel());
-        });
-    </script>
 </head>
 <body>
-    <div data-bind="if: menu">
-        <div id="menu">
-            <h1>Hug a Pug!</h1>
-            <div id="deviceready" class="blink">
-                <ul>
-                    <li><a data-bind="click: function () { $root.startGame(0) }">Time Hugging</a></li>
-                    <li><a data-bind="click: function () { $root.startGame(1) }">Endless Hugging</a></li>
-                    <li><a data-bind="click: function () { $root.showScore() }">Best Pug Huggers</a></li>
-                    <li><a data-bind="click: $root.showAbout">About</a></li>
-                </ul>
-            </div>
-        </div>
+    <div class="listening">
+        <h1>Hug a Pug</h1>
+        <p>Loading...</p>
     </div>
 
-
-    <div data-bind="with: game">
-        <div id="level" data-bind="attr: { 'class': 'level-' + currentLevel()}">
-            <div id="progress">
-                <div></div>
-            </div>
-
-            <div id="canvas" data-bind="event: { touchmove: handleUserMove }">
-                <div class="clearfix">
-                    <div id="neck"></div>
-                    <div id="back"></div>
-                    <div id="tail"></div>
+    <div class="ready">
+        <div data-bind="if: menu">
+            <div id="menu">
+                <h1>Hug a Pug</h1>
+                <div id="deviceready" class="blink">
+                    <ul>
+                        <li><a data-bind="click: function () { $root.startGame(0) }">Time Hugging</a></li>
+                        <li><a data-bind="click: function () { $root.startGame(1) }">Endless Hugging</a></li>
+                        <li><a data-bind="click: function () { $root.showScore() }">Best Pug Huggers</a></li>
+                        <li class="about"><a data-bind="click: $root.showAbout">About</a></li>
+                    </ul>
                 </div>
             </div>
+        </div>
 
-            <div id="adds">
-                <script type="text/javascript" src="http://ad.leadboltads.net/show_app_ad.js?section_id=396571682"></script>
+
+        <div data-bind="with: game">
+            <div id="level" data-bind="attr: { 'class': 'level-' + currentLevel()}">
+                <div id="progress">
+                    <div></div>
+                </div>
+
+                <div id="canvas" data-bind="event: { touchmove: handleUserMove }">
+                    <div class="clearfix">
+                        <div id="neck"></div>
+                        <div id="back"></div>
+                        <div id="tail"></div>
+                    </div>
+                </div>
+
+                <div id="adds">
+                    <script type="text/javascript" src="http://ad.leadboltads.net/show_app_ad.js?section_id=396571682"></script>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div data-bind="with: score">
-        <div id="score">
-            <div data-bind="if: lastEllapsedTime">
-                <h1>SCORE</h1>
-                <h2 data-bind="text: lastEllapsedTime"></h2>
+        <div data-bind="with: score">
+            <div id="score">
+                <div data-bind="if: lastEllapsedTime">
+                    <h1>SCORE</h1>
+                    <h2 data-bind="text: lastEllapsedTime"></h2>
+                </div>
+                <h2>TOP HUGGERS</h2>
             </div>
-            <h2>TOP HUGGERS</h2>
         </div>
-    </div>
 
-    <div data-bind="if: about">
-        <div id="about">
-            <h1>ABOUT</h1>
+        <div data-bind="if: about">
+            <div id="about">
+                <h1>ABOUT</h1>
+            </div>
         </div>
     </div>
 </body>
+<script type="text/javascript" src="phonegap.js"></script>
+<script type="text/javascript" src="js/knockout-2.3.0.js"></script>
+<script type="text/javascript" src="js/jquery-2.0.3.min.js"></script>
+<script type="text/javascript">
+    document.addEventListener("deviceready", function () {
 
+        function GameViewModel() {
+
+            // Variables
+            var availableLevels = [1, 2, 3, 4, 5, 6, 7];
+            var maxLevels = 1;
+            var modes = { Time: 0, Free: 1 };
+            var bark = new Media(getPhoneGapPath() + "mp3/pug_bark.mp3");
+
+            var $active = null;
+            var score = 0;
+            var maxScore = 100;
+            var shouldWait = false;
+            var levelsStarted = 0;
+
+            // Data
+            var self = this;
+            self.currentLevel = ko.observable();
+            self.isFinished = ko.observable(false);
+            self.levels = [];
+            self.mode = modes.Free;
+            self.ellapsedTime = new Date().getTime();
+
+
+            // Behaviours
+            self.loadNextLevel = function () {
+                levelsStarted++;
+
+                if (self.levels.length == 0) {
+                    self.levels = shuffle(availableLevels.slice(0));
+                }
+
+                if (self.mode == modes.Time) {
+                    if (levelsStarted == maxLevels + 1) {
+                        self.ellapsedTime = new Date().getTime() - self.ellapsedTime;
+                        self.isFinished(true);
+                        return;
+                    }
+                }
+
+                self.currentLevel(self.levels.pop());
+                score = 0;
+                resizeCanvas();
+                $active = $("#neck");
+                $("#progress > div").css("width", score + "%");
+            };
+
+            self.handleUserMove = function (data, event) {
+                if (shouldWait) {
+                    return;
+                }
+
+                var touch = event.touches[0] || event.changedTouches[0];
+                var elm = $active.offset();
+                var x = touch.pageX - elm.left;
+                var y = touch.pageY - elm.top;
+                if (x < $active.width() && x > 0) {
+                    if (y < $active.height() && y > 0) {
+                        score++;
+                        $("#progress > div").css("width", score + "%");
+                        checkLevel(score);
+
+                        shouldWait = true;
+                        setTimeout(function () { shouldWait = false; }, 100);
+                    }
+                }
+            };
+
+
+            // Functions
+            function shuffle(o) {
+                for (var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+                return o;
+            };
+
+            function resizeCanvas() {
+                var width = $("#canvas").width();
+                $("#canvas").css("height", width / 3 * 4);
+
+                var body = document.body;
+                var html = document.documentElement;
+                var height = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
+                $("#progress").css("height", height * 0.05);
+            };
+
+            function getPhoneGapPath() {
+                var path = window.location.pathname;
+                path = path.substr(path, path.length - 10);
+                return 'file://' + path;
+            };
+
+            function checkLevel(score) {
+                if (score == 1) {
+                    navigator.notification.vibrate(250);
+                } else if (score == 33) {
+                    navigator.notification.vibrate(250);
+                    bark.play();
+                    $active = $("#back");
+                } else if (score == 66) {
+                    navigator.notification.vibrate(250);
+                    bark.play();
+                    $active = $("#tail");
+                } else if (score >= maxScore) {
+                    navigator.notification.vibrate(500);
+                    bark.play();
+                    self.loadNextLevel();
+                }
+            };
+        }
+
+        function ScoreViewModel() {
+
+            // Data
+            var self = this;
+            self.lastEllapsedTime = ko.observable();
+
+            // Initialization
+            self.lastEllapsedTime(null);
+        }
+
+        function MasterViewModel() {
+
+            // Data
+            var self = this;
+            self.menu = ko.observable();
+            self.about = ko.observable();
+            self.game = ko.observable();
+            self.score = ko.observable();
+
+            // Behaviors
+            self.startGame = function (mode) {
+                self.about(null);
+                self.menu(null);
+                self.score(null);
+
+                var game = new GameViewModel();
+                game.mode = mode;
+                game.isFinished.subscribe(function (value) {
+                    self.showScore(game.ellapsedTime);
+                })
+
+                self.game(game);
+                game.loadNextLevel();
+            };
+
+            self.showScore = function (ellapsedTime) {
+                self.about(null);
+                self.menu(null);
+                self.game(null);
+
+                var score = new ScoreViewModel();
+                if (ellapsedTime) {
+                    score.lastEllapsedTime(ellapsedTime);
+                }
+                self.score(score);
+            };
+
+            self.showAbout = function () {
+                self.menu(null);
+                self.game(null);
+                self.score(null);
+                self.about(true);
+            };
+
+            // Initialization
+            showMenu();
+
+            // Function
+            function showMenu() {
+                self.about(null);
+                self.game(null);
+                self.score(null);
+                self.menu(true);
+            }
+
+            document.addEventListener("backbutton", function () {
+                if (self.menu()) {
+                    navigator.app.exitApp();
+                }
+                else {
+                    showMenu();
+                }
+            }, false);
+        }
+
+        $(".listening").hide();
+        $(".ready").show();
+        ko.applyBindings(new MasterViewModel());
+    });
+</script>
 </html>

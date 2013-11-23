@@ -12,3 +12,70 @@
     height: 100%;
     color: #FFF;
 }
+
+.ready
+{
+    display: none;
+}
+
+.listening
+{
+    background: url(../img/logo.png) no-repeat center top; /* 170px x 200px */
+    text-align: center;
+    width: 128px;
+    height: 220px;
+    left: 50%;
+    top: 50%;
+    position: absolute;
+    background-position: left center;
+    padding: 0px 0px 0px 0px;
+    margin: -110px 0px 0px -64px;
+    animation: fade 3000ms infinite;
+    -webkit-animation: fade 3000ms infinite;
+}
+
+.listening h1
+{
+    font-size: 24px;
+}
+
+.listening p
+{
+    margin-top: 1em;
+}
+
+@keyframes fade
+{
+    from
+    {
+        opacity: 1.0;
+    }
+
+    50%
+    {
+        opacity: 0.5;
+    }
+
+    to
+    {
+        opacity: 1.0;
+    }
+}
+
+@-webkit-keyframes fade
+{
+    from
+    {
+        opacity: 1.0;
+    }
+
+    50%
+    {
+        opacity: 0.5;
+    }
+
+    to
+    {
+        opacity: 1.0;
+    }
+}

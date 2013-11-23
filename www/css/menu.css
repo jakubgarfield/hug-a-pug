@@ -15,7 +15,7 @@
     overflow: visible;
     padding: 0px;
     text-align: center;
-    margin-bottom: 150px;
+    margin-bottom: 80px;
 }
 
 #menu ul li
@@ -30,52 +30,20 @@
     -webkit-border-radius: 15px;
     color: #FFFFFF;
     font-size: 20px;
-    margin: 20px auto;
+    margin: 30px auto;
     padding: 20px 0px;
     width: 80%;
     background-color: #4B946A;
     text-decoration: none;
 }
 
-
-@keyframes fade
-{
-    from
-    {
-        opacity: 1.0;
-    }
-
-    50%
-    {
-        opacity: 0.4;
-    }
-
-    to
-    {
-        opacity: 1.0;
-    }
-}
-
-@-webkit-keyframes fade
-{
-    from
-    {
-        opacity: 1.0;
-    }
-
-    50%
-    {
-        opacity: 0.4;
-    }
-
-    to
-    {
-        opacity: 1.0;
-    }
-}
-
 #menu .blink
 {
     animation: fade 3000ms infinite;
     -webkit-animation: fade 3000ms infinite;
+}
+
+#menu .about 
+{
+    margin-top: 180px;
 }
